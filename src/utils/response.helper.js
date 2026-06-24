@@ -12,4 +12,4 @@ export const formatApiResponse = (success, data, message = "") => {
     data: data                     
   };
 };
-  
+export { formatApiResponse as formatResponse };
