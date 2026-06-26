@@ -1,29 +1,33 @@
-const reviewsDatabase = [
-  { reviewId: 1, productId: 101, user: "Rossy", rating: 5, comment: "¡Excelente producto, muy recomendado!" }
-];
+import mongoose from "mongoose";
+
+const reviewSchema = new mongoose.Schema({
+  productId: { type: Number, required: true },
+  userId: { type: Number, required: true },
+  user: { type: String, default: "Usuario Anónimo" },
+  rating: { type: Number, required: true },
+  comment: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Review = mongoose.models.Review || mongoose.model("Review", reviewSchema);
 
 const getReviewsByProduct = async (productId) => {
-  return reviewsDatabase.filter(r => r.productId === parseInt(productId));
+  return await Review.find({ productId: parseInt(productId) }).sort({ createdAt: -1 });
 };
 
 const createReview = async (reviewData) => {
-  const { productId, user, rating, comment } = reviewData;
-
+  const { productId, rating, comment } = reviewData;
   if (!productId || !rating || !comment) {
     throw new Error("Faltan campos obligatorios para crear la reseña");
   }
 
-  const newReview = {
-    reviewId: reviewsDatabase.length + 1,
+  const newReview = new Review({
+    ...reviewData,
     productId: parseInt(productId),
-    user: user || "Usuario Anónimo",
-    rating: parseInt(rating),
-    comment,
-    createdAt: new Date()
-  };
+    rating: parseInt(rating)
+  });
 
-  reviewsDatabase.push(newReview);
-  return newReview;
+  return await newReview.save();
 };
 
 export default { getReviewsByProduct, createReview };

@@ -1,56 +1,44 @@
-let activeCart = {
-  items: [],
-  status: "ACTIVE" 
-};
+import { pool } from "../config/db.js";
 
-const getCart = async () => {
-  return activeCart;
-};
+const getCartByUserId = async (userId) => {
 
-const addItemToCart = async (itemData) => {
-  const { productId, name, price, quantity = 1 } = itemData;
-
-  if (activeCart.status === "CHECKED_OUT") {
-    activeCart = { items: [], status: "ACTIVE" };
-  }
-
-  const existingItem = activeCart.items.find(item => item.productId === productId);
-
-  if (existingItem) {
-    existingItem.quantity += quantity;
-  } else {
-    activeCart.items.push({
-      itemId: activeCart.items.length + 1,
-      productId,
-      name,
-      price,
-      quantity
-    });
-  }
-
-  return activeCart;
-};
-
-const removeItemFromCart = async (itemId) => {
-  activeCart.items = activeCart.items.filter(item => item.itemId !== parseInt(itemId));
-  return activeCart;
-};
-
-const checkoutCart = async () => {
-  if (activeCart.items.length === 0) {
-    throw new Error("No puedes procesar un carrito vacío");
-  }
-
-  activeCart.status = "CHECKED_OUT";
+  let cartResult = await pool.query("SELECT id FROM cart WHERE user_id = $1", [userId]);
   
-  const order = {
-    orderId: Math.floor(Math.random() * 90000) + 10000,
-    items: [...activeCart.items],
-    total: activeCart.items.reduce((acc, item) => acc + (item.price * item.quantity), 0),
-    date: new Date()
-  };
+  if (cartResult.rows.length === 0) {
+    cartResult = await pool.query("INSERT INTO cart (user_id) VALUES ($1) RETURNING id", [userId]);
+  }
+  
+  const cartId = cartResult.rows[0].id;
 
-  return order;
+  const itemsResult = await pool.query(
+    `SELECT ci.id as item_id, p.id as product_id, p.name, p.price, p.image_url, ci.quantity 
+     FROM cart_items ci
+     JOIN products p ON ci.product_id = p.id
+     WHERE ci.cart_id = $1`,
+    [cartId]
+  );
+
+  return itemsResult.rows;
 };
 
-export default { getCart, addItemToCart, removeItemFromCart, checkoutCart };
+const addToCart = async (userId, productId, quantity = 1) => {
+
+  let cartResult = await pool.query("SELECT id FROM cart WHERE user_id = $1", [userId]);
+  if (cartResult.rows.length === 0) {
+    cartResult = await pool.query("INSERT INTO cart (user_id) VALUES ($1) RETURNING id", [userId]);
+  }
+  const cartId = cartResult.rows[0].id;
+
+  const result = await pool.query(
+    `INSERT INTO cart_items (cart_id, product_id, quantity) 
+     VALUES ($1, $2, $3)
+     ON CONFLICT (cart_id, product_id) 
+     DO UPDATE SET quantity = cart_items.quantity + EXCLUDED.quantity
+     RETURNING *`,
+    [cartId, productId, quantity]
+  );
+
+  return result.rows[0];
+};
+
+export default { getCartByUserId, addToCart };

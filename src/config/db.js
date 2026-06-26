@@ -1,14 +1,26 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
+import pg from 'pg';
+import { env } from './env.js';
+
+const { Pool } = pg;
+
+export const pool = new Pool({
+  connectionString: env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false 
+  }
+});
 
 export const dbConnection = async () => {
-  try {
-    
-    const mongoUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/netflix_db";
-    
-    await mongoose.connect(mongoUri);
-    console.log("🟢 Conectado con éxito a la base de datos MongoDB");
+  try {8
+    const conn = await mongoose.connect(env.MONGO_URI);
+    console.log(`🚀 MongoDB conectado con éxito: ${conn.connection.host}`);
+
+    await pool.query('SELECT NOW()');
+    console.log('🚀 PostgreSQL (Supabase) conectado con éxito');
+
   } catch (error) {
-    console.error("🔴 Error en la conexión a la DB:", error.message);
-    process.exit(1); 
+    console.error(`❌ Error al conectar a las bases de datos: ${error.message}`);
+    process.exit(1);
   }
 };

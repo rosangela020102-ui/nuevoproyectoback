@@ -1,28 +1,44 @@
 import authService from "../services/auth.service.js";
-import { formatResponse } from "../utils/response.helper.js";
 
-const register = async (req, res, next) => {
+export const register = async (req, res, next) => {
   try {
-    const newUser = await authService.registerUser(req.body);
-    res.status(201).json(formatResponse(true, "Usuario registrado con éxito", newUser));
+    const user = await authService.registerUser(req.body);
+    res.status(201).json({
+      success: true,
+      data: user
+    });
   } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
+    next(error);
   }
 };
 
-const login = async (req, res, next) => {
+export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const loginData = await authService.loginUser(email, password);
-    res.status(200).json(formatResponse(true, "Inicio de sesión correcto", loginData));
+    const { user, token } = await authService.loginUser(email, password);
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000 
+    });
+
+    res.status(200).json({
+      success: true,
+      data: user
+    });
   } catch (error) {
-    res.status(401).json({ success: false, error: error.message });
+    next(error);
   }
 };
 
-const getMe = async (req, res, next) => {
+export const getMe = async (req, res, next) => {
   try {
-    res.status(200).json(formatResponse(true, "Perfil de usuario obtenido", req.user || { message: "Simulación de perfil" }));
+    res.status(200).json({
+      success: true,
+      data: req.user
+    });
   } catch (error) {
     next(error);
   }

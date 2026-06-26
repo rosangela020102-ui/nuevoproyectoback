@@ -1,36 +1,30 @@
-import jwt from "jsonwebtoken";
-
-const usersDatabase = [];
-const JWT_SECRET = process.env.JWT_SECRET || "clave_secreta_super_segura";
+import { pool } from "../config/db.js";
 
 const registerUser = async (userData) => {
-  const { email, password, name } = userData;
+  const { name, email, password } = userData;
 
-  const userExists = usersDatabase.find(u => u.email === email);
-  if (userExists) {
+  const userExists = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+  if (userExists.rows.length > 0) {
     throw new Error("El correo electrónico ya está registrado");
   }
 
-  const newUser = {
-    id: usersDatabase.length + 1,
-    name,
-    email,
-    password, 
-    role: "user"
-  };
+  const newUser = await pool.query(
+    "INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role",
+    [name, email, password, "user"]
+  );
 
-  usersDatabase.push(newUser);
-  return newUser;
+  return newUser.rows[0];
 };
 
 const loginUser = async (email, password) => {
-  const user = usersDatabase.find(u => u.email === email && u.password === password);
-  
-  if (!user) {
+  const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+  const user = result.rows[0];
+
+  if (!user || user.password !== password) {
     throw new Error("Credenciales inválidas");
   }
 
-  const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: "24h" });
+  const token = `simulated-jwt-token-for-${user.id}`;
 
   return {
     user: { id: user.id, name: user.name, email: user.email, role: user.role },
@@ -38,4 +32,4 @@ const loginUser = async (email, password) => {
   };
 };
 
-export default { registerUser, loginUser, usersDatabase };
+export default { registerUser, loginUser };

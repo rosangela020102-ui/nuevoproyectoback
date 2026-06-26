@@ -13,10 +13,21 @@ const getProductReviews = async (req, res, next) => {
 
 const addReview = async (req, res, next) => {
   try {
-    const newReview = await reviewService.createReview(req.body);
+    const { productId, rating, comment } = req.body;
+    const userId = req.user.id; 
+    const userName = req.user.name; 
+
+    const newReview = await reviewService.createReview({
+      productId,
+      userId,
+      user: userName,
+      rating,
+      comment
+    });
+
     res.status(201).json(formatResponse(true, "Reseña publicada con éxito", newReview));
   } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
+    next(error);
   }
 };
 
