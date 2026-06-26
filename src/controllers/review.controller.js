@@ -3,8 +3,8 @@ import { formatResponse } from "../utils/response.helper.js";
 
 const getProductReviews = async (req, res, next) => {
   try {
-    const { productId } = req.params;
-    const reviews = await reviewService.getReviewsByProduct(productId);
+    const { id } = req.params; 
+    const reviews = await reviewService.getReviewsByProduct(id);
     res.status(200).json(formatResponse(true, "Reseñas obtenidas con éxito", reviews));
   } catch (error) {
     next(error);
@@ -13,12 +13,13 @@ const getProductReviews = async (req, res, next) => {
 
 const addReview = async (req, res, next) => {
   try {
-    const { productId, rating, comment } = req.body;
-    const userId = req.user.id; 
-    const userName = req.user.name; 
+    const { id } = req.params; 
+    const { rating, comment } = req.body; 
+    const userId = req.user.id;
+    const userName = req.user.name;
 
     const newReview = await reviewService.createReview({
-      productId,
+      productId: id, 
       userId,
       user: userName,
       rating,
