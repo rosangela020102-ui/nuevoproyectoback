@@ -1,0 +1,28 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API Ecommerce - React Ready",
+    "version": "1.0.0",
+    "description": "Documentación oficial (PostgreSQL + MongoDB)"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor Local"
+    }
+  ],
+  "paths": {
+    "/api/me": {
+      "get": {
+        "tags": ["User"],
+        "summary": "Obtener el perfil del usuario autenticado",
+        "description": "Devuelve los datos del perfil si el usuario está logueado.",
+        "responses": {
+          "200": {
+            "description": "Datos devueltos correctamente"
+          }
+        }
+      }
+    }
+  }
+}
