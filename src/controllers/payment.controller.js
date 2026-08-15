@@ -1,11 +1,11 @@
 import Stripe from "stripe";
 
-// Inicializamos Stripe con tu clave secreta del .env
+// Inicializamos Stripe con la clave secreta del .env
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const createCheckoutSession = async (req, res, next) => {
   try {
-    const { items } = req.body; // Espera un array de productos [{ name, price, quantity }, ...]
+    const { items } = req.body; 
 
     if (!items || items.length === 0) {
       return res.status(400).json({ success: false, message: "No hay productos en el carrito" });

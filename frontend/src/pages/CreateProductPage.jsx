@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import clienteAxios from "../api/axios"; // 👈 Importamos el archivo que creamos antes
+import clienteAxios from "../api/axios"; 
 
 const CreateProductPage = () => {
   const [name, setName] = useState("");
@@ -10,7 +10,7 @@ const CreateProductPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Usamos FormData porque seguro enviarás imágenes u otros datos
+    
     const formData = new FormData();
     formData.append("name", name);
     formData.append("price", price);
@@ -20,8 +20,7 @@ const CreateProductPage = () => {
     }
 
     try {
-      // Hacemos la petición POST al backend usando clienteAxios
-      // Como configuramos con withCredentials: true, enviará la cookie automáticamente
+      
       const response = await clienteAxios.post("/admin/products", formData, {
         headers: {
           "Content-Type": "multipart/form-data",

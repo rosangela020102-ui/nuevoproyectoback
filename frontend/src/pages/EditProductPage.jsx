@@ -35,8 +35,7 @@ const EditProductPage = () => {
     e.preventDefault();
 
     try {
-      // Ya NO necesitamos enviar headers de autorización manuales. 
-      // clienteAxios se encarga de enviar la cookie automáticamente (withCredentials: true).
+      
       await clienteAxios.put(`/admin/products/${id}`, {
         name,
         price,

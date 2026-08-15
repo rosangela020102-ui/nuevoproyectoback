@@ -4,10 +4,10 @@ import { isAdmin } from "../middlewares/admin.middleware.js";
 
 const router = Router();
 
-// Aplica el middleware de autenticación y de rol ADMIN a todas las rutas de este archivo
+
 router.use(verifyToken, isAdmin);
 
-// Ruta de ejemplo para el panel de administración
+
 router.get("/dashboard", (req, res) => {
   try {
     res.status(200).json({

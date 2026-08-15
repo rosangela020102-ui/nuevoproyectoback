@@ -6,7 +6,7 @@ export default function ProductForm({ initialData = {}, onSubmit }) {
     price: "",
     description: "",
     stock: "",
-    image: null, // Nuevo campo para la imagen
+    image: null, 
   });
 
   const [errors, setErrors] = useState({});
@@ -18,7 +18,7 @@ export default function ProductForm({ initialData = {}, onSubmit }) {
         price: initialData.price || "",
         description: initialData.description || "",
         stock: initialData.stock || "",
-        image: null, // La imagen existente viene como URL, pero el input de archivo empieza vacío
+        image: null, 
       });
     }
   }, [initialData]);
@@ -36,7 +36,7 @@ export default function ProductForm({ initialData = {}, onSubmit }) {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "image") {
-      setForm({ ...form, image: files[0] }); // Capturar el archivo de imagen
+      setForm({ ...form, image: files[0] }); 
     } else {
       setForm({ ...form, [name]: value });
     }
@@ -49,17 +49,17 @@ export default function ProductForm({ initialData = {}, onSubmit }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validate()) {
-      // Creamos un objeto FormData para enviar textos y archivos juntos al backend
+     
       const formData = new FormData();
       formData.append("name", form.name);
       formData.append("price", form.price);
       formData.append("description", form.description);
       formData.append("stock", form.stock);
       if (form.image) {
-        formData.append("image", form.image); // Clave que espera multer en el backend
+        formData.append("image", form.image); 
       }
 
-      onSubmit(formData); // Enviamos el FormData al componente padre
+      onSubmit(formData); 
     }
   };
 
