@@ -33,6 +33,23 @@ export const login = async (req, res, next) => {
   }
 };
 
+export const logout = async (req, res, next) => {
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict"
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Sesión cerrada correctamente"
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getMe = async (req, res, next) => {
   try {
     res.status(200).json({
@@ -44,4 +61,4 @@ export const getMe = async (req, res, next) => {
   }
 };
 
-export default { register, login, getMe };
+export default { register, login, logout, getMe };

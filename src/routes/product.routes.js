@@ -1,10 +1,25 @@
 import { Router } from "express";
-import { getProducts } from "../controllers/product.controller.js";
+import { 
+  getProducts, 
+  getProductById, 
+  createProduct, 
+  updateProduct, 
+  deleteProduct 
+} from "../controllers/product.controller.js";
 
-import { requestLogger, fakeAuthValidator } from "../middlewares/product.middleware.js";
+// Importación de middlewares
+import { verifyToken } from "../middlewares/auth.middleware.js";
+import { isAdmin } from "../middlewares/admin.middleware.js";
 
 const router = Router();
 
-router.get("/products", requestLogger, fakeAuthValidator, getProducts);
+// Rutas públicas
+router.get("/", getProducts);
+router.get("/:id", getProductById);
+
+// Rutas protegidas solo para administradores (CRUD)
+router.post("/", [verifyToken, isAdmin], createProduct);
+router.put("/:id", [verifyToken, isAdmin], updateProduct);
+router.delete("/:id", [verifyToken, isAdmin], deleteProduct);
 
 export default router;

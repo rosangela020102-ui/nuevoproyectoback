@@ -1,3 +1,16 @@
+# Dependencias
 node_modules/
+
+# Variables de entorno
 .env
+
+# Archivos compilados y de construcción
+dist/
+build/
+
+# Base de datos generada / ORM
 /src/generated/prisma
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db

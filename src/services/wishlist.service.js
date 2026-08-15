@@ -1,23 +1,44 @@
-const wishlistDatabase = {
-  items: [] 
-};
+import mongoose from "mongoose";
 
-const getWishlist = async () => {
-  return wishlistDatabase;
-};
+const wishlistSchema = new mongoose.Schema({
+  userId: { type: Number, required: true, unique: true },
+  items: [{ type: Number }]
+});
 
-const addToWishlist = async (productId) => {
-  const id = parseInt(productId);
-  if (!wishlistDatabase.items.includes(id)) {
-    wishlistDatabase.items.push(id);
+const Wishlist = mongoose.models.Wishlist || mongoose.model("Wishlist", wishlistSchema);
+
+const getWishlist = async (userId) => {
+  let wishlist = await Wishlist.findOne({ userId });
+  if (!wishlist) {
+    wishlist = await Wishlist.create({ userId, items: [] });
   }
-  return wishlistDatabase;
+  return wishlist;
 };
 
-const removeFromWishlist = async (productId) => {
+const addToWishlist = async (userId, productId) => {
   const id = parseInt(productId);
-  wishlistDatabase.items = wishlistDatabase.items.filter(item => item !== id);
-  return wishlistDatabase;
+  let wishlist = await Wishlist.findOne({ userId });
+  
+  if (!wishlist) {
+    wishlist = await Wishlist.create({ userId, items: [] });
+  }
+
+  if (!wishlist.items.includes(id)) {
+    wishlist.items.push(id);
+    await wishlist.save();
+  }
+  return wishlist;
+};
+
+const removeFromWishlist = async (userId, productId) => {
+  const id = parseInt(productId);
+  let wishlist = await Wishlist.findOne({ userId });
+  
+  if (wishlist) {
+    wishlist.items = wishlist.items.filter(item => item !== id);
+    await wishlist.save();
+  }
+  return wishlist || { userId, items: [] };
 };
 
 export default { getWishlist, addToWishlist, removeFromWishlist };

@@ -1,26 +1,17 @@
-import mongoose from 'mongoose';
-import pg from 'pg';
-import { env } from './env.js';
-
-const { Pool } = pg;
+import pkg from "pg";
+const { Pool } = pkg;
+import prisma from "./prisma.js";
 
 export const pool = new Pool({
-  connectionString: env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false 
-  }
+  connectionString: process.env.DATABASE_URL,
 });
 
 export const dbConnection = async () => {
-  try {8
-    const conn = await mongoose.connect(env.MONGO_URI);
-    console.log(`🚀 MongoDB conectado con éxito: ${conn.connection.host}`);
-
-    await pool.query('SELECT NOW()');
-    console.log('🚀 PostgreSQL (Supabase) conectado con éxito');
-
+  try {
+    await prisma.$connect();
+    console.log("✅ Base de datos (Supabase/PostgreSQL) conectada correctamente");
   } catch (error) {
-    console.error(`❌ Error al conectar a las bases de datos: ${error.message}`);
+    console.error("❌ Error al conectar a la base de datos:", error.message);
     process.exit(1);
   }
 };
