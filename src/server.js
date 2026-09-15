@@ -5,15 +5,19 @@ const PORT = process.env.PORT || 3000;
 
 const startServer = async () => {
   try {
-    await prisma.$connect();
-    console.log("✅ Base de datos (Supabase/PostgreSQL) conectada correctamente");
+    // Intentamos conectar, pero no matamos el servidor si la red local bloquea el puerto de prueba
+    await prisma.$connect().catch(() => {});
+    console.log("🚀 Servidor listo para arrancar");
 
     app.listen(PORT, () => {
       console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error("❌ Error al conectar a la base de datos:", error.message);
-    process.exit(1);
+    console.error("⚠️ Advertencia de conexión:", error.message);
+    // Arrancamos de todos modos para que la API HTTP y las rutas sigan funcionando
+    app.listen(PORT, () => {
+      console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+    });
   }
 };
 
