@@ -1,6 +1,6 @@
 import cartService from "../services/cart.service.js";
 import { formatResponse } from "../utils/response.helper.js";
-import { pool } from "../config/db.js";
+import prisma from "../config/prisma.js"; // <-- Importamos Prisma
 
 const getCart = async (req, res, next) => {
   try {
@@ -29,23 +29,26 @@ const removeItem = async (req, res, next) => {
     const userId = req.user.id;
     const { itemId } = req.params;
 
-    // 1. Comprobar que el cart_item pertenezca al carrito del usuario autenticado
-    const ownershipQuery = `
-      SELECT ci.id 
-      FROM cart_items ci
-      JOIN cart c ON ci.cart_id = c.id
-      WHERE ci.id = $1 AND c.user_id = $2
-    `;
-    const checkResult = await pool.query(ownershipQuery, [itemId, userId]);
+    // 1. Comprobar que el cart_item pertenezca al carrito del usuario autenticado usando Prisma
+    const cartItem = await prisma.cartItem.findFirst({
+      where: {
+        id: Number(itemId),
+        cart: {
+          userId: userId // Asegura que el carrito pertenece al usuario logueado
+        }
+      }
+    });
 
-    if (checkResult.rows.length === 0) {
+    if (!cartItem) {
       return res.status(403).json(
         formatResponse(false, "No tienes permiso para eliminar este producto o el item no existe", null)
       );
     }
 
-    // 2. Si pasa la validación, se borra el item
-    await pool.query("DELETE FROM cart_items WHERE id = $1", [itemId]);
+    // 2. Si pasa la validación, se borra el item con Prisma
+    await prisma.cartItem.delete({
+      where: { id: Number(itemId) }
+    });
     
     res.status(200).json(formatResponse(true, "Producto eliminado del carrito", null));
   } catch (error) {
@@ -56,9 +59,17 @@ const removeItem = async (req, res, next) => {
 const checkout = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    let cartResult = await pool.query("SELECT id FROM cart WHERE user_id = $1", [userId]);
-    if (cartResult.rows.length > 0) {
-      await pool.query("DELETE FROM cart_items WHERE cart_id = $1", [cartResult.rows[0].id]);
+    
+    // Buscamos el carrito del usuario con Prisma
+    const cart = await prisma.cart.findUnique({
+      where: { userId: userId }
+    });
+
+    if (cart) {
+      // Vaciamos los items del carrito
+      await prisma.cartItem.deleteMany({
+        where: { cartId: cart.id }
+      });
     }
 
     res.status(200).json(formatResponse(true, "Compra realizada y carrito vaciado con éxito", null));

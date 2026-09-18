@@ -1,20 +1,30 @@
-export class MovieModel {
-    constructor({ id, title, genre, duration, rating }) {
-        this.id = Number(id);
+import mongoose from 'mongoose';
 
-        if (!title) throw new Error("El título de la película es obligatorio.");
-    this.title = String(title);
+
+const productSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  price: { type: Number, required: true },
+  category: { type: String, required: true },
+  stock: { type: Number, default: 0 }
+});
+
+export class ProductModelClass {
+  constructor({ name, price, category, stock }) {
+    if (!name) throw new Error("El nombre del producto es obligatorio.");
+    this.name = String(name);
     
-    if (!genre) throw new Error("El género de la película es obligatorio.");
-    this.genre = String(genre);
+    if (!category) throw new Error("La categoría del producto es obligatoria.");
+    this.category = String(category);
     
-    this.duration = String(duration || "0 min");
-    
-    const parsedRating = Number(rating);
-    if (parsedRating < 0 || parsedRating > 10) {
-      throw new Error("El rating debe ser un número entre 0 y 10.");
+    const parsedPrice = Number(price);
+    if (isNaN(parsedPrice) || parsedPrice < 0) {
+      throw new Error("El precio debe ser un número válido.");
     }
-    this.rating = parsedRating;
-    }
+    this.price = parsedPrice;
+    
+    this.stock = Number(stock || 0);
+  }
 }
 
+
+export const ProductModel = mongoose.model('Product', productSchema, 'thebridge');
