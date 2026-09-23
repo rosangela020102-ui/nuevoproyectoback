@@ -1,40 +1,73 @@
-import { pool } from "../config/db.js";
+import prisma from "../config/prisma.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const registerUser = async (userData) => {
-  const { name, email, password } = userData;
+  const { name, email, password, role } = userData;
 
-  const userExists = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-  if (userExists.rows.length > 0) {
-    throw new Error("El correo electrónico ya está registrado");
+  if (!name || !email || !password) {
+    const error = new Error("Nombre, email y contraseña son obligatorios");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const userExists = await prisma.user.findUnique({
+    where: { email }
+  });
+
+  if (userExists) {
+    const error = new Error("El correo electrónico ya está registrado");
+    error.statusCode = 400;
+    throw error;
   }
 
   const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-  const newUser = await pool.query(
-    "INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role",
-    [name, email, hashedPassword, "user"]
-  );
+  const assignedRole = role === "ADMIN" ? "ADMIN" : "USER";
 
-  return newUser.rows[0];
+  const newUser = await prisma.user.create({
+    data: {
+      name,
+      email,
+      password: hashedPassword,
+      role: assignedRole 
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true
+    }
+  });
+
+  return newUser;
 };
 
 const loginUser = async (email, password) => {
- 
-  const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-  const user = result.rows[0];
+  if (!email || !password) {
+    const error = new Error("Email y contraseña obligatorios");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email }
+  });
 
   if (!user) {
-    throw new Error("Credenciales inválidas");
+    const error = new Error("Credenciales inválidas");
+    error.statusCode = 401;
+    throw error;
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
+  
   if (!isPasswordValid) {
-    throw new Error("Credenciales inválidas");
+    const error = new Error("Credenciales inválidas");
+    error.statusCode = 401;
+    throw error;
   }
-
 
   const token = jwt.sign(
     { id: user.id, role: user.role },
