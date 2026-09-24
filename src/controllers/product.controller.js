@@ -27,7 +27,13 @@ export const getProductById = async (req, res, next) => {
 
 export const createProduct = async (req, res, next) => {
   try {
-    const product = await productService.createProduct(req.body);
+
+    const productData = {
+      ...req.body,
+      image: req.file ? req.file.path : undefined
+    };
+
+    const product = await productService.createProduct(productData);
     res.status(201).json({
       success: true,
       data: product
@@ -40,7 +46,14 @@ export const createProduct = async (req, res, next) => {
 export const updateProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const product = await productService.updateProduct(id, req.body);
+    
+    
+    const productData = {
+      ...req.body,
+      ...(req.file && { image: req.file.path })
+    };
+
+    const product = await productService.updateProduct(id, productData);
     res.status(200).json({
       success: true,
       data: product

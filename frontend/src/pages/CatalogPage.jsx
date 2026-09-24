@@ -95,6 +95,13 @@ export default function CatalogPage() {
             return (
               <div key={productId} style={{ border: "1px solid #444", borderRadius: "8px", padding: "15px", backgroundColor: "#1e1e1e", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                 <div>
+                  {product.image && (
+                    <img 
+                      src={product.image} 
+                      alt={product.name} 
+                      style={{ width: "100%", height: "160px", objectFit: "cover", borderRadius: "6px", marginBottom: "10px" }} 
+                    />
+                  )}
                   <h3>{product.name}</h3>
                   <p>{product.description}</p>
                   <p style={{ fontWeight: "bold", color: "#4ade80" }}>${product.price}</p>
