@@ -24,7 +24,25 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser()); 
-app.use(cors({ origin: true, credentials: true }));
+
+// --- AQUÍ VA EL NUEVO CORS ---
+const allowedOrigins = [
+  "https://proyectobackyfront.netlify.app",
+  "http://localhost:5173",
+  "http://localhost:3000"
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      return callback(new Error('Bloqueado por CORS'), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true
+}));
+
 
 const swaggerDocument = JSON.parse(
   fs.readFileSync(path.resolve("./swagger.json"), "utf8")
