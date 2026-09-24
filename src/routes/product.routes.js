@@ -10,15 +10,16 @@ import {
 // Importación de middlewares
 import { verifyToken } from "../middlewares/auth.middleware.js";
 import { isAdmin } from "../middlewares/admin.middleware.js";
+import { validateProduct } from "../middlewares/productValidation.js"; 
 
 const router = Router();
 
-// Rutas públicas
+
 router.get("/", getProducts);
 router.get("/:id", getProductById);
 
-// Rutas protegidas solo para administradores (CRUD)
-router.post("/", [verifyToken, isAdmin], createProduct);
+
+router.post("/", [verifyToken, isAdmin, validateProduct], createProduct); 
 router.put("/:id", [verifyToken, isAdmin], updateProduct);
 router.delete("/:id", [verifyToken, isAdmin], deleteProduct);
 

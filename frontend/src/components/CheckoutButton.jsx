@@ -8,12 +8,10 @@ const CheckoutButton = ({ cartItems }) => {
     try {
       setLoading(true);
 
-      
       const response = await clienteAxios.post("/payment/create-checkout-session", {
         items: cartItems, 
       });
 
-      
       if (response.data && response.data.url) {
         window.location.href = response.data.url;
       }
