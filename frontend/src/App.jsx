@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AdminRoute from "./components/AdminRoute";
 import AdminDashboard from "./pages/AdminDashboard";
+import CreateProductPage from "./pages/CreateProductPage";
+import EditProductPage from "./pages/EditProductPage";
 import CatalogPage from "./pages/CatalogPage";
 import CartPage from "./pages/CartPage";
 import LoginPage from "./pages/LoginPage";
@@ -9,8 +11,6 @@ import WishlistPage from "./pages/WishlistPage";
 import SuccessPage from "./pages/SuccessPage";
 
 export default function App() {
-  const user = { name: "Usuario Admin", role: "ADMIN" };
-
   return (
     <BrowserRouter>
       <Routes>
@@ -20,8 +20,12 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/success" element={<SuccessPage />} />
-        <Route element={<AdminRoute user={user} />}>
+        
+        {/* Rutas del panel de administración protegidas */}
+        <Route element={<AdminRoute />}>
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/products/new" element={<CreateProductPage />} />
+          <Route path="/admin/products/:id/edit" element={<EditProductPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

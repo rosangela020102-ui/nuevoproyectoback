@@ -1,76 +1,41 @@
 import React, { useState } from "react";
-import clienteAxios from "../api/axios"; 
+import { useNavigate } from "react-router-dom";
+import clienteAxios from "../api/axios";
+import ProductForm from "../components/ProductForm"; 
 
 const CreateProductPage = () => {
-  const [name, setName] = useState("");
-  const [price, setPrice] = useState("");
-  const [description, setDescription] = useState("");
-  const [image, setImage] = useState(null);
+  const navigate = useNavigate();
+  const [error, setError] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("price", price);
-    formData.append("description", description);
-    if (image) {
-      formData.append("image", image);
-    }
-
+  const handleCreateProduct = async (formData) => {
     try {
-      
-      const response = await clienteAxios.post("/admin/products", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      setError(null);
 
-      console.log("Producto creado:", response.data);
+      
+      await clienteAxios.post("/products", formData);
+
+  
       alert("¡Producto creado con éxito!");
-    } catch (error) {
-      console.error("Error al crear producto:", error.response?.data || error.message);
-      alert("Hubo un error al crear el producto");
+
+    
+      navigate("/admin");
+    } catch (err) {
+      console.error("Error al crear producto:", err);
+      const message = err.response?.data?.message || "Hubo un error al crear el producto. Inténtalo de nuevo.";
+      setError(message);
     }
   };
 
   return (
-    <div>
-      <h2>Crear Nuevo Producto</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Nombre:</label>
-          <input 
-            type="text" 
-            value={name} 
-            onChange={(e) => setName(e.target.value)} 
-          />
+    <div style={{ padding: "20px" }}>
+      {error && (
+        <div style={{ color: "red", marginBottom: "15px", padding: "10px", border: "1px solid red", borderRadius: "4px" }}>
+          {error}
         </div>
-        <div>
-          <label>Precio:</label>
-          <input 
-            type="number" 
-            value={price} 
-            onChange={(e) => setPrice(e.target.value)} 
-          />
-        </div>
-        <div>
-          <label>Descripción:</label>
-          <textarea 
-            value={description} 
-            onChange={(e) => setDescription(e.target.value)} 
-          />
-        </div>
-        <div>
-          <label>Imagen:</label>
-          <input 
-            type="file" 
-            onChange={(e) => setImage(e.target.files[0])} 
-          />
-        </div>
-        <button type="submit">Guardar Producto</button>
-      </form>
+      )}
+
+      
+      <ProductForm onSubmit={handleCreateProduct} />
     </div>
   );
 };
